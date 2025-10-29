@@ -398,11 +398,22 @@ def get_bddl_git_hash():
         str: bddl asset commit hash
     """
     try:
+        # Handle case where bddl.__file__ might be None (e.g., with namespace packages or editable installs)
+        if bddl.__file__ is not None:
+            bddl_path = Path(bddl.__file__).parent
+        else:
+            # Fallback: use bddl module's __path__ attribute
+            _candidate_path = bddl.__path__[0]
+            # If activity_definitions is not in the __path__ location, check the 'bddl' subdirectory
+            if not os.path.exists(os.path.join(_candidate_path, "activity_definitions")):
+                _candidate_path = os.path.join(_candidate_path, "bddl")
+            bddl_path = Path(_candidate_path)
+
         git_hash = subprocess.check_output(
-            ["git", "-C", Path(bddl.__file__).parent, "rev-parse", "HEAD"], shell=False, stderr=subprocess.DEVNULL
+            ["git", "-C", bddl_path, "rev-parse", "HEAD"], shell=False, stderr=subprocess.DEVNULL
         )
         return git_hash.decode("utf-8").strip()
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, TypeError, AttributeError):
         return None
 
 

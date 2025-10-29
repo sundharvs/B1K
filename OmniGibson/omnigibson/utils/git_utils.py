@@ -22,7 +22,14 @@ def git_info(directory):
 
 
 def project_git_info():
+    # Handle case where bddl.__file__ might be None (e.g., with namespace packages or editable installs)
+    if bddl.__file__ is not None:
+        bddl_path = Path(bddl.__file__).parent.parent
+    else:
+        # Fallback: use bddl module's __path__ attribute
+        bddl_path = Path(bddl.__path__[0])
+
     return {
         "OmniGibson": git_info(Path(og.root_path).parent),
-        "bddl": git_info(Path(bddl.__file__).parent.parent),
+        "bddl": git_info(bddl_path),
     }

@@ -1,0 +1,73 @@
+# Navigation-Only Configuration for Language-Conditioned Path Planning Research
+# Uses Turtlebot with differential drive (non-holonomic constraints)
+# Perception disabled - uses ground truth object localization
+# Compatible with BEHAVIOR tasks for language-conditioned navigation
+
+env:
+  device: null
+  automatic_reset: false
+  flatten_action_space: false
+  flatten_obs_space: false
+  use_external_obs: false
+  initial_pos_z_offset: 0.1
+  external_sensors: null  # No external sensors - navigation only
+
+render:
+  viewer_width: 1280
+  viewer_height: 720
+
+scene:
+  type: InteractiveTraversableScene
+  scene_model: house_double_floor_lower  # Use BEHAVIOR house scene
+  trav_map_resolution: 0.1  # 10cm resolution for navigation
+  default_erosion_radius: 0.0
+  trav_map_with_objects: true  # Include dynamic obstacles in traversability
+  num_waypoints: 10  # More waypoints for smoother paths
+  waypoint_resolution: 0.2
+  not_load_object_categories: null
+  load_room_types: ["living_room", "kitchen"]  # Load available rooms (bedroom, bathroom not in this scene)
+  load_room_instances: null
+  seg_map_resolution: 0.1  # Semantic map for room/object queries
+  scene_source: OG
+  include_robots: true
+
+robots:
+  - type: Turtlebot
+    obs_modalities: []  # NO PERCEPTION - use ground truth only
+    include_sensor_names: null
+    exclude_sensor_names: null
+    scale: 1.0
+    self_collision: false
+    action_normalize: true
+    action_type: continuous
+    # No sensor_config - perception disabled
+    controller_config:
+      base:
+        # Differential drive - non-holonomic constraints
+        name: DifferentialDriveController
+        # Actions: [left_wheel_vel, right_wheel_vel]
+
+objects: []  # Objects loaded from BEHAVIOR task
+
+task:
+  type: PointNavigationTask
+  robot_idn: 0
+  floor: 0
+  initial_pos: null
+  initial_quat: null
+  goal_pos: null
+  goal_tolerance: 0.36    # turtlebot bodywidth
+  goal_in_polar: false
+  path_range: [1.0, 10.0]
+  visualize_goal: true
+  visualize_path: false
+  n_vis_waypoints: 25
+  reward_type: geodesic
+  termination_config:
+    max_collisions: 500
+    max_steps: 1000
+    fall_height: 0.03
+  reward_config:
+    r_potential: 1.0
+    r_collision: 0.1
+    r_pointgoal: 10.0

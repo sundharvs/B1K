@@ -1,0 +1,12 @@
+[workspace]
+authors = ["Sundhar Vinodh Sangeetha <sundharvs@gmail.com>"]
+channels = ["conda-forge"]
+name = "BEHAVIOR-1K"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+python = "3.10.*"
+pip = ">=25.2,<26"

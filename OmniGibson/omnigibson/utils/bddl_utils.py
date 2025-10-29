@@ -264,7 +264,17 @@ KINEMATIC_STATES_BDDL = frozenset([state.__name__.lower() for state in _KINEMATI
 
 # BEHAVIOR-related
 OBJECT_TAXONOMY = ObjectTaxonomy()
-BEHAVIOR_ACTIVITIES = sorted(os.listdir(os.path.join(os.path.dirname(bddl.__file__), "activity_definitions")))
+# Handle case where bddl.__file__ might be None (e.g., with namespace packages or editable installs)
+if bddl.__file__ is not None:
+    _bddl_path = os.path.dirname(bddl.__file__)
+else:
+    # Fallback: check if __path__ points to a namespace package parent directory
+    _candidate_path = bddl.__path__[0]
+    # If activity_definitions is not in the __path__ location, check the 'bddl' subdirectory
+    if not os.path.exists(os.path.join(_candidate_path, "activity_definitions")):
+        _candidate_path = os.path.join(_candidate_path, "bddl")
+    _bddl_path = _candidate_path
+BEHAVIOR_ACTIVITIES = sorted(os.listdir(os.path.join(_bddl_path, "activity_definitions")))
 
 
 def _populate_input_output_objects_systems(og_recipe, input_synsets, output_synsets):

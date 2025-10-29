@@ -2602,9 +2602,20 @@ class CookingSystemRule(CookingRule):
 
 
 def import_recipes():
+    # Handle case where bddl.__file__ might be None (e.g., with namespace packages or editable installs)
+    if bddl.__file__ is not None:
+        _bddl_path = os.path.dirname(bddl.__file__)
+    else:
+        # Fallback: check if __path__ points to a namespace package parent directory
+        _candidate_path = bddl.__path__[0]
+        # If generated_data is not in the __path__ location, check the 'bddl' subdirectory
+        if not os.path.exists(os.path.join(_candidate_path, "generated_data")):
+            _candidate_path = os.path.join(_candidate_path, "bddl")
+        _bddl_path = _candidate_path
+
     for json_file, rule_names in _JSON_FILES_TO_RULES.items():
         recipe_fpath = os.path.join(
-            os.path.dirname(bddl.__file__), "generated_data", "transition_map", "tm_jsons", json_file
+            _bddl_path, "generated_data", "transition_map", "tm_jsons", json_file
         )
         if not os.path.exists(recipe_fpath):
             log.warning(f"Cannot find recipe file at {recipe_fpath}. Skipping importing recipes.")
